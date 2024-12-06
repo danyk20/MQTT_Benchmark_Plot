@@ -18,3 +18,7 @@ Run [MQTT Benchmark](https://github.com/danyk20/MQTT_Benchmark.git) to generate 
 ```shell
 python3 show_graph.py
 ```
+
+## Output
+
+![Example of the plot](output/single_producer.png)
