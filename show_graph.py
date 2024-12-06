@@ -5,7 +5,44 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def load_data(directory):
+def format_subscriber(subscribers_number: str) -> str:
+    if '00' in subscribers_number:
+        return subscribers_number[:-2] + "x100"
+    else:
+        return subscribers_number
+
+
+def average_agg_files(data_dir: str) -> None:
+    """
+    Averages .agg files in a directory and its subdirectories.
+
+    Args:
+        data_dir: The root directory to search for .agg files.
+
+    Returns:
+        None. Saves the averaged results to .txt files with the same name as the original .agg files.
+    """
+
+    for root, _, files in os.walk(data_dir):
+        for file in files:
+            if file.endswith('.agg'):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r') as f:
+                    data = np.array([eval(line) for line in f.readlines()])
+
+                # Calculate the average along the first axis (across files)
+                avg_data = np.mean(data, axis=0)
+
+                # Save the averaged data to a .txt file
+                output_file = file_path.replace('.agg', '.txt')
+                with open(output_file, 'w') as f:
+                    result = []
+                    for row in avg_data:
+                        result.append(str(row.tolist()))
+                    f.write("[" + ','.join(result) + "]")
+
+
+def load_data(directory) -> list:
     """
     Load and process data from files in the given directory.
     If there are multiple files, compute the average of corresponding data points.
@@ -27,38 +64,58 @@ def load_data(directory):
 
     return data.tolist()
 
-# Load data from directories
-subscribers_1 = load_data('data/1')
-subscribers_2 = load_data('data/2')
-subscribers_3 = load_data('data/3')
+
+average_agg_files('data')
+
+# # Load data from directories
+data_folder = 'data'
+qos = [name for name in os.listdir(data_folder) if os.path.isdir(os.path.join(data_folder, name))]
+dataset = dict()
+subscribers = []
+for selected_qos in qos:
+    subscribers = [name for name in os.listdir(os.path.join(data_folder, selected_qos)) if
+                   os.path.isdir(os.path.join(data_folder, selected_qos))]
+    dataset[selected_qos] = dict()
+    for subscriber in subscribers:
+        dataset[selected_qos][subscriber] = load_data(os.path.join(data_folder, selected_qos, subscriber))
+
+subscribers = list(map(str, sorted(list(map(int, subscribers)))))
 
 # Extracting data for plotting
-sizes = [entry[1] for entry in subscribers_1]
-freq_1 = [entry[3] for entry in subscribers_1]
-freq_2 = [entry[3] for entry in subscribers_2]
-freq_3 = [entry[3] for entry in subscribers_3]
-
-bandwidth_1 = [entry[2] / 1e6 for entry in subscribers_1]  # Convert to Mbps
-bandwidth_2 = [entry[2] / 1e6 for entry in subscribers_2]  # Convert to Mbps
-bandwidth_3 = [entry[2] / 1e6 for entry in subscribers_3]  # Convert to Mbps
+frequency = dict()
+bandwidth = dict()
+for selected_qos in qos:
+    frequency[selected_qos] = dict()
+    bandwidth[selected_qos] = dict()
+    for subscriber in subscribers:
+        frequency[selected_qos][subscriber] = [entry[3] for entry in dataset[selected_qos][subscriber]]
+        bandwidth[selected_qos][subscriber] = [entry[2] / 1e6 for entry in dataset[selected_qos][subscriber]]
+sizes = [entry[1] for entry in dataset[qos[0]][subscribers[0]]]
 
 # Plotting
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
 
 # Frequency plot
 ax1.set_title("Frequency and Bandwidth vs Size")
-ax1.loglog(sizes, freq_1, 'o-', label="1 - Subscriber")
-ax1.loglog(sizes, freq_2, 's-', label="2 - Subscribers")
-ax1.loglog(sizes, freq_3, '^-', label="3 - Subscribers")
+for selected_qos in qos:
+    for subscriber in subscribers:
+        mark = 'o-' if selected_qos == 0 else '*-'
+        ax1.loglog(sizes, frequency[selected_qos][subscriber], mark,
+                   label=format_subscriber(subscriber) + " - Subscribers; QoS - " + selected_qos)
+
 ax1.set_ylabel("Frequency (Hz)")
 ax1.grid(True, which="both", linestyle="--", linewidth=0.5)
 ax1.legend()
 ax1.set_xticks([])  # Remove x-axis labels for top plot
 
 # Bandwidth plot
-ax2.loglog(sizes, bandwidth_1, 'o-', label="1 - Subscriber")
-ax2.loglog(sizes, bandwidth_2, 's-', label="2 - Subscribers")
-ax2.loglog(sizes, bandwidth_3, '^-', label="3 - Subscribers")
+
+for selected_qos in qos:
+    for subscriber in subscribers:
+        mark = 'o-' if selected_qos == 0 else '*-'
+        ax2.loglog(sizes, bandwidth[selected_qos][subscriber], mark,
+                   label=format_subscriber(subscriber) + " - Subscriber; QoS - " + selected_qos)
+
 ax2.set_xlabel("Size (KB)")
 ax2.set_ylabel("Bandwidth (Mbps)")
 ax2.grid(True, which="both", linestyle="--", linewidth=0.5)
@@ -69,5 +126,11 @@ for ax in [ax1, ax2]:
     ax.set_xticks(sizes)
     ax.set_xticklabels([f"{size // 1024}KB" for size in sizes], rotation=45)
 
-plt.tight_layout()
+# Adding a description box
+description = (
+    "Messages: 1000    MQTT: 3.1.1    RabbitMQ: 4.0    g++: 11.5.0    AlmaLinux: 9.4    VCPUs: 2   RAM: 3.7GB"
+)
+fig.text(0.5, 0.02, description, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.8))
+
+plt.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
 plt.show()
