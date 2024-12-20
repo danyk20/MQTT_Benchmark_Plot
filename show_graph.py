@@ -74,7 +74,7 @@ dataset = dict()
 subscribers = []
 for selected_qos in qos:
     subscribers = [name for name in os.listdir(os.path.join(data_folder, selected_qos)) if
-                   os.path.isdir(os.path.join(data_folder, selected_qos))]
+                   os.path.isdir(os.path.join(data_folder, selected_qos, name))]
     dataset[selected_qos] = dict()
     for subscriber in subscribers:
         dataset[selected_qos][subscriber] = load_data(os.path.join(data_folder, selected_qos, subscriber))
@@ -99,7 +99,7 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
 ax1.set_title("Frequency and Bandwidth vs Size")
 for selected_qos in qos:
     for subscriber in subscribers:
-        mark = 'o-' if selected_qos == 0 else '*-'
+        mark = 'o-' if selected_qos == '0' else 'v-'
         ax1.loglog(sizes, frequency[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscribers; QoS - " + selected_qos)
 
@@ -112,14 +112,14 @@ ax1.set_xticks([])  # Remove x-axis labels for top plot
 
 for selected_qos in qos:
     for subscriber in subscribers:
-        mark = 'o-' if selected_qos == 0 else '*-'
+        mark = 'o-' if selected_qos == '0' else 'v-'
         ax2.loglog(sizes, bandwidth[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscriber; QoS - " + selected_qos)
 
 ax2.set_xlabel("Size (KB)")
-ax2.set_ylabel("Bandwidth (Mbps)")
+ax2.set_ylabel("Bandwidth (MBps)")
 ax2.grid(True, which="both", linestyle="--", linewidth=0.5)
-ax2.legend()
+# ax2.legend()
 
 # Add overall x-axis ticks
 for ax in [ax1, ax2]:
@@ -128,7 +128,8 @@ for ax in [ax1, ax2]:
 
 # Adding a description box
 description = (
-    "Messages: 1000    MQTT: 3.1.1    RabbitMQ: 4.0    g++: 11.5.0    AlmaLinux: 9.4    VCPUs: 2   RAM: 3.7GB"
+    "Messages: 1000    MQTT: 3.1.1    RabbitMQ: 4.0    g++: 11.5.0    AlmaLinux: 9.4    Subscriber_1: L   \n"
+    "Subscriber_2: M   Subscriber_3: L   Publisher: L   Broker: 32GB & Intel(R) Xeon(R) E-2236 CPU @ 3.40GHz"
 )
 fig.text(0.5, 0.02, description, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.8))
 
