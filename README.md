@@ -13,7 +13,10 @@ Run [MQTT Benchmark](https://github.com/danyk20/MQTT_Benchmark.git) to generate 
 ## Instruction
 
 1. Replace example data with your data inside of `data` folder
-2. Run the script
+- You can add several folders with data and then specify folder by adding path to it as argument when a running script.
+- e.g. `python3 show_graph.py data_RabbitMQ`
+2. Update `config.py` based on your needs
+3. Run the script
 
 ```shell
 python3 show_graph.py

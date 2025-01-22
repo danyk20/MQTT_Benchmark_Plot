@@ -1,8 +1,13 @@
 import ast
 import os
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+from config import description, throughput_requirement
+
+data_folder = 'data' if len(sys.argv) == 1 else sys.argv[1]
 
 
 def format_subscriber(subscribers_number: str) -> str:
@@ -65,10 +70,8 @@ def load_data(directory) -> list:
     return data.tolist()
 
 
-average_agg_files('data')
+average_agg_files(data_folder)
 
-# # Load data from directories
-data_folder = 'data'
 qos = [name for name in os.listdir(data_folder) if os.path.isdir(os.path.join(data_folder, name))]
 dataset = dict()
 subscribers = []
@@ -103,6 +106,13 @@ for selected_qos in qos:
         ax1.loglog(sizes, frequency[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscribers; QoS - " + selected_qos)
 
+if throughput_requirement > 0:
+    ax1.axvline(x=throughput_requirement * 1024, color='red', linestyle='--')
+    ax1.annotate('requirement', xy=(throughput_requirement * 1024, ax1.get_ylim()[0]),
+                 xytext=(80 * 1024, ax1.get_ylim()[0] * 2),
+                 arrowprops=dict(facecolor='red', arrowstyle='->'),
+                 fontsize=12, color='red')
+
 ax1.set_ylabel("Frequency (Hz)")
 ax1.grid(True, which="both", linestyle="--", linewidth=0.5)
 ax1.legend()
@@ -115,11 +125,17 @@ for selected_qos in qos:
         mark = 'o-' if selected_qos == '0' else 'v-'
         ax2.loglog(sizes, bandwidth[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscriber; QoS - " + selected_qos)
+if throughput_requirement > 0:
+    ax2.axvline(x=throughput_requirement * 1024, color='red', linestyle='--')
+    ax2.annotate('requirement', xy=(throughput_requirement * 1024, ax2.get_ylim()[0]),
+                 xytext=(80 * 1024, ax2.get_ylim()[0] * 2),
+                 arrowprops=dict(facecolor='red', arrowstyle='->'),
+                 fontsize=12, color='red')
 
 ax2.set_xlabel("Size (KB)")
 ax2.set_ylabel("Bandwidth (MBps)")
 ax2.grid(True, which="both", linestyle="--", linewidth=0.5)
-# ax2.legend()
+ax2.legend()
 
 # Add overall x-axis ticks
 for ax in [ax1, ax2]:
@@ -127,10 +143,6 @@ for ax in [ax1, ax2]:
     ax.set_xticklabels([f"{size // 1024}KB" for size in sizes], rotation=45)
 
 # Adding a description box
-description = (
-    "Messages: 1000    MQTT: 3.1.1    RabbitMQ: 4.0    g++: 11.5.0    AlmaLinux: 9.4    Subscriber_1: L   \n"
-    "Subscriber_2: M   Subscriber_3: L   Publisher: L   Broker: 32GB & Intel(R) Xeon(R) E-2236 CPU @ 3.40GHz"
-)
 fig.text(0.5, 0.02, description, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.8))
 
 plt.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
