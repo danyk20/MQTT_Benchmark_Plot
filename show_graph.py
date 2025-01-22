@@ -5,7 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from config import description, throughput_requirement
+from config import description, expected_payload, required_throughput
 
 data_folder = 'data' if len(sys.argv) == 1 else sys.argv[1]
 
@@ -106,9 +106,9 @@ for selected_qos in qos:
         ax1.loglog(sizes, frequency[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscribers; QoS - " + selected_qos)
 
-if throughput_requirement > 0:
-    ax1.axvline(x=throughput_requirement * 1024, color='red', linestyle='--')
-    ax1.annotate('requirement', xy=(throughput_requirement * 1024, ax1.get_ylim()[0]),
+if expected_payload > 0:
+    ax1.axvline(x=expected_payload * 1024, color='red', linestyle='--')
+    ax1.annotate('requirement', xy=(expected_payload * 1024, ax1.get_ylim()[0]),
                  xytext=(80 * 1024, ax1.get_ylim()[0] * 2),
                  arrowprops=dict(facecolor='red', arrowstyle='->'),
                  fontsize=12, color='red')
@@ -125,13 +125,14 @@ for selected_qos in qos:
         mark = 'o-' if selected_qos == '0' else 'v-'
         ax2.loglog(sizes, bandwidth[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscriber; QoS - " + selected_qos)
-if throughput_requirement > 0:
-    ax2.axvline(x=throughput_requirement * 1024, color='red', linestyle='--')
-    ax2.annotate('requirement', xy=(throughput_requirement * 1024, ax2.get_ylim()[0]),
+if expected_payload > 0:
+    ax2.axvline(x=expected_payload * 1024, color='red', linestyle='--')
+    ax2.annotate('requirement', xy=(expected_payload * 1024, ax2.get_ylim()[0]),
                  xytext=(80 * 1024, ax2.get_ylim()[0] * 2),
                  arrowprops=dict(facecolor='red', arrowstyle='->'),
                  fontsize=12, color='red')
 
+ax2.axhline(y=required_throughput, color='g', linestyle='--', label=f'Requirement {required_throughput} MB/s')
 ax2.set_xlabel("Size (KB)")
 ax2.set_ylabel("Bandwidth (MBps)")
 ax2.grid(True, which="both", linestyle="--", linewidth=0.5)
