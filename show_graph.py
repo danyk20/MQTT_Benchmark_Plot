@@ -102,7 +102,7 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12))
 ax1.set_title("Frequency and Bandwidth vs Size")
 for selected_qos in qos:
     for subscriber in subscribers[selected_qos]:
-        mark = 'o-' if selected_qos == '0' else 'v-'
+        mark = 'o-' if selected_qos == 0 else 'v-'
         ax1.loglog(sizes, frequency[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscribers; QoS - " + str(selected_qos))
 
@@ -122,7 +122,7 @@ ax1.set_xticks([])  # Remove x-axis labels for top plot
 
 for selected_qos in qos:
     for subscriber in subscribers[selected_qos]:
-        mark = 'o-' if selected_qos == '0' else 'v-'
+        mark = 'o-' if selected_qos == 0 else 'v-'
         ax2.loglog(sizes, bandwidth[selected_qos][subscriber], mark,
                    label=format_subscriber(subscriber) + " - Subscriber; QoS - " + str(selected_qos))
 if expected_payload > 0:
