@@ -77,7 +77,7 @@ dataset = dict()
 subscribers = [[] for _ in range(len(qos))]
 for selected_qos in qos:
     subscribers[selected_qos] = [name for name in os.listdir(os.path.join(data_folder, str(selected_qos))) if
-                   os.path.isdir(os.path.join(data_folder, str(selected_qos), name))]
+                                 os.path.isdir(os.path.join(data_folder, str(selected_qos), name))]
     dataset[selected_qos] = dict()
     for subscriber in subscribers[selected_qos]:
         dataset[selected_qos][subscriber] = load_data(os.path.join(data_folder, str(selected_qos), subscriber))
@@ -147,4 +147,5 @@ for ax in [ax1, ax2]:
 fig.text(0.5, 0.02, description, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.8))
 
 plt.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
+plt.savefig(os.path.join(data_folder, "results.pdf"))
 plt.show()
