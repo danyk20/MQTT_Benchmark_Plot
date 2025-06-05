@@ -148,4 +148,5 @@ fig.text(0.5, 0.02, description, ha='center', fontsize=12, bbox=dict(facecolor='
 
 plt.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
 plt.savefig(os.path.join(data_folder, "results.pdf"))
+plt.savefig(os.path.join(data_folder, "results.png"))
 plt.show()
